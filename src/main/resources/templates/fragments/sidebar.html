@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="sidebar" class="sidebar bg-dark text-white">
+        <div class="d-flex flex-column p-3 h-100">
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li class="nav-item">
+                    <a th:href="@{/dashboard}" class="nav-link text-white" 
+                       th:classappend="${#httpServletRequest.requestURI == '/dashboard' ? 'active' : ''}">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/bookings}" class="nav-link text-white"
+                       th:classappend="${#httpServletRequest.requestURI.startsWith('/booking') ? 'active' : ''}">
+                        <i class="bi bi-calendar-check me-2"></i>
+                        Bookings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/rooms}" class="nav-link text-white"
+                       th:classappend="${#httpServletRequest.requestURI.startsWith('/room') ? 'active' : ''}">
+                        <i class="bi bi-door-closed me-2"></i>
+                        Rooms
+                    </a>
+                </li>
+                <li class="nav-item" th:if="${session.staff != null && (session.staff.role == 'ADMIN' || session.staff.role == 'MANAGER')}">
+                    <a th:href="@{/staff}" class="nav-link text-white"
+                       th:classappend="${#httpServletRequest.requestURI.startsWith('/staff') ? 'active' : ''}">
+                        <i class="bi bi-people me-2"></i>
+                        Staff
+                    </a>
+                </li>
+				<li class="nav-item">
+				    <a th:href="@{/facilities}" class="nav-link text-white"
+				       th:classappend="${#httpServletRequest.requestURI.startsWith('/facilities') ? 'active' : ''}">
+				        <i class="bi bi-building me-2"></i>
+				        Facilities
+				    </a>
+				</li>
+				<li class="nav-item">
+				    <a th:href="@{/customers}" class="nav-link text-white"
+				       th:classappend="${#httpServletRequest.requestURI.startsWith('/customers') ? 'active' : ''}">
+				        <i class="bi bi-people me-2"></i>
+				        Customers
+				    </a>
+				</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
