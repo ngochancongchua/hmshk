@@ -18,12 +18,21 @@ VALUES
 ('401', 'SUITE', 4, 250.00, 'Luxury Suite with separate living area', true, false),
 ('501', 'DELUXE', 2, 200.00, 'Deluxe Room with premium amenities', true, false);
 
--- Inserting sample bookings
-INSERT INTO booking (room_id, guest_name, guest_email, guest_phone, check_in_date, check_out_date, number_of_guests, total_price, status, created_by, created_at)
+-- Inserting sample bookings for h2 database
+
+
+INSERT INTO booking (room_id, guest_name, guest_email, guest_phone, check_in_date, check_out_date, number_of_guests, total_price, status, created_by, created_at) VALUES 
+(1, 'John Chan', 'john@example.com', '1234567890', CURRENT_DATE, DATEADD('DAY', 3, CURRENT_DATE), 1, 300.00, 'RESERVED', 1, CURRENT_TIMESTAMP),
+(3, 'Jane Ng', 'jane@example.com', '2345678901', DATEADD('DAY', 1, CURRENT_DATE), DATEADD('DAY', 5, CURRENT_DATE), 2, 600.00, 'RESERVED', 2, CURRENT_TIMESTAMP),
+(7, 'Robert Cheung', 'robert@example.com', '3456789012', DATEADD('DAY', 2, CURRENT_DATE), DATEADD('DAY', 7, CURRENT_DATE), 3, 1250.00, 'RESERVED', 1, CURRENT_TIMESTAMP);
+
+-- for mysqwl
+/*INSERT INTO booking (room_id, guest_name, guest_email, guest_phone, check_in_date, check_out_date, number_of_guests, total_price, status, created_by, created_at)
 VALUES
 (1, 'John Chan', 'john@example.com', '1234567890', CURRENT_DATE, DATE_ADD(CURRENT_DATE, INTERVAL 3 DAY), 1, 300.00, 'RESERVED', 1, CURRENT_TIMESTAMP),
 (3, 'Jane Ng', 'jane@example.com', '2345678901', DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY), DATE_ADD(CURRENT_DATE, INTERVAL 5 DAY), 2, 600.00, 'RESERVED', 2, CURRENT_TIMESTAMP),
 (7, 'Robert Cheung', 'robert@example.com', '3456789012', DATE_ADD(CURRENT_DATE, INTERVAL 2 DAY), DATE_ADD(CURRENT_DATE, INTERVAL 7 DAY), 3, 1250.00, 'RESERVED', 1, CURRENT_TIMESTAMP);
+*/
 
 -- Update room availability based on bookings
 UPDATE room SET available = false WHERE id IN (1, 3, 7);

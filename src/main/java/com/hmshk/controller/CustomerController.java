@@ -17,9 +17,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CustomerController {
     
-    private final CustomerService customerService;
     
-
+    private final CustomerService customerService;
     
     @GetMapping("/customers")
     public String viewCustomers(Model model, HttpSession session) {
