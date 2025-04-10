@@ -1,0 +1,118 @@
+改用DTO暫定project structure
+
+hotel-management-system/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── hmshk/
+│   │   │           ├── HotelManagementApplication.java
+│   │   │           ├── config/
+│   │   │           │   └── GlobalExceptionHandler.java
+│   │   │           ├── controller/
+│   │   │           │   ├── BookingController.java
+│   │   │           │   ├── CheckinCheckoutController.java
+│   │   │           │   ├── CustomerController.java
+│   │   │           │   ├── DashboardController.java
+│   │   │           │   ├── FacilityBookingController.java
+│   │   │           │   ├── FacilityController.java
+│   │   │           │   ├── RoomController.java
+│   │   │           │   ├── StaffController.java
+│   │   │           │   ├── StaffDashboardController.java
+│   │   │           │   └── api/
+│   │   │           │       ├── BookingApiController.java
+│   │   │           │       └── FacilityBookingApiController.java
+│   │   │           ├── dto/
+│   │   │           │   ├── mapper/
+│   │   │           │   │   ├── BookingMapper.java
+│   │   │           │   │   ├── CustomerMapper.java
+│   │   │           │   │   ├── FacilityBookingMapper.java
+│   │   │           │   │   ├── FacilityMapper.java
+│   │   │           │   │   ├── RoomMapper.java
+│   │   │           │   │   └── StaffMapper.java
+│   │   │           │   ├── request/
+│   │   │           │   │   ├── BookingRequestDTO.java
+│   │   │           │   │   ├── CustomerRequestDTO.java
+│   │   │           │   │   ├── FacilityBookingRequestDTO.java
+│   │   │           │   │   ├── FacilityRequestDTO.java
+│   │   │           │   │   ├── RoomRequestDTO.java
+│   │   │           │   │   └── StaffRequestDTO.java
+│   │   │           │   └── response/
+│   │   │           │       ├── BookingResponseDTO.java
+│   │   │           │       ├── CustomerResponseDTO.java
+│   │   │           │       ├── FacilityBookingResponseDTO.java
+│   │   │           │       ├── FacilityResponseDTO.java
+│   │   │           │       ├── RoomResponseDTO.java
+│   │   │           │       └── StaffResponseDTO.java
+│   │   │           ├── model/
+│   │   │           │   ├── Booking.java
+│   │   │           │   ├── BookingStatus.java
+│   │   │           │   ├── Customer.java
+│   │   │           │   ├── Facility.java
+│   │   │           │   ├── FacilityBooking.java
+│   │   │           │   ├── FacilityBookingStatus.java
+│   │   │           │   ├── Role.java
+│   │   │           │   ├── Room.java
+│   │   │           │   ├── RoomType.java
+│   │   │           │   └── Staff.java
+│   │   │           ├── repository/
+│   │   │           │   ├── BookingRepository.java
+│   │   │           │   ├── CustomerRepository.java
+│   │   │           │   ├── FacilityBookingRepository.java
+│   │   │           │   ├── FacilityRepository.java
+│   │   │           │   ├── RoomRepository.java
+│   │   │           │   └── StaffRepository.java
+│   │   │           └── service/
+│   │   │               ├── BookingService.java
+│   │   │               ├── CustomerService.java
+│   │   │               ├── FacilityBookingService.java
+│   │   │               ├── FacilityService.java
+│   │   │               ├── RoomService.java
+│   │   │               └── StaffService.java
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       ├── data.sql
+│   │       ├── static/
+│   │       │   ├── css/
+│   │       │   │   ├── dashboard.css
+│   │       │   │   └── style.css
+│   │       │   └── js/
+│   │       │       ├── booking.js
+│   │       │       ├── calendar.js
+│   │       │       ├── customer.js
+│   │       │       ├── facility-booking.js
+│   │       │       ├── facility.js
+│   │       │       └── main.js
+│   │       └── templates/
+│   │           ├── booking-edit.html
+│   │           ├── booking-new.html
+│   │           ├── booking.html
+│   │           ├── checkin-checkout.html
+│   │           ├── customer-details.html
+│   │           ├── customer-form.html
+│   │           ├── customer.html
+│   │           ├── dashboard.html
+│   │           ├── facility-booking-details.html
+│   │           ├── facility-booking-new.html
+│   │           ├── facility-booking.html
+│   │           ├── facility.html
+│   │           ├── fragments/
+│   │           │   ├── footer.html
+│   │           │   ├── header.html
+│   │           │   └── sidebar.html
+│   │           ├── login.html
+│   │           ├── register.html
+│   │           ├── room-available.html
+│   │           ├── room-edit.html
+│   │           ├── room.html
+│   │           ├── simple-staff-dashboard.html
+│   │           ├── staff-dashboard.html
+│   │           ├── staff-edit.html
+│   │           └── staff.html
+│   └── test/
+│       └── java/
+│           └── com/
+│               └── hmshk/
+│                   └── HotelManagementApplicationTests.java
+├── pom.xml
+└── README.md
