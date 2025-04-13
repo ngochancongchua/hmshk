@@ -20,7 +20,10 @@ public class StaffController {
     private final StaffService staffService;
     
     //added
-
+    // 有些debugger suggest不需要的，但絕對要的！不可以刪！
+    public StaffController(StaffService staffService) {
+        this.staffService = staffService;
+    }
     //end
     
     @GetMapping("/login")
@@ -50,14 +53,28 @@ public class StaffController {
     }
     
     @PostMapping("/register")
-    public String register(@ModelAttribute Staff staff, RedirectAttributes redirectAttributes) {
+    public String register(@ModelAttribute Staff staff, RedirectAttributes redirectAttributes, HttpSession session) {
         try {
             staffService.registerStaff(staff);
-            redirectAttributes.addFlashAttribute("success", "Staff registered successfully");
-            return "redirect:/login";
+            
+            // Check if user is already logged in (staff page registration)
+            if (session.getAttribute("staff") != null) {
+                redirectAttributes.addFlashAttribute("success", "Staff registered successfully");
+                return "redirect:/staff"; // Redirect back to staff page
+            } else {
+                // For standalone registration page
+                redirectAttributes.addFlashAttribute("success", "Staff registered successfully");
+                return "redirect:/login";
+            }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/register";
+            
+            // Check if user is already logged in (staff page registration)
+            if (session.getAttribute("staff") != null) {
+                return "redirect:/staff"; // Redirect back to staff page
+            } else {
+                return "redirect:/register";
+            }
         }
     }
     

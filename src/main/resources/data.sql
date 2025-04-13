@@ -18,21 +18,12 @@ VALUES
 ('401', 'SUITE', 4, 250.00, 'Luxury Suite with separate living area', true, false),
 ('501', 'DELUXE', 2, 200.00, 'Deluxe Room with premium amenities', true, false);
 
--- Inserting sample bookings for h2 database
-
-
-INSERT INTO booking (room_id, guest_name, guest_email, guest_phone, check_in_date, check_out_date, number_of_guests, total_price, status, created_by, created_at) VALUES 
-(1, 'John Chan', 'john@example.com', '1234567890', CURRENT_DATE, DATEADD('DAY', 3, CURRENT_DATE), 1, 300.00, 'RESERVED', 1, CURRENT_TIMESTAMP),
-(3, 'Jane Ng', 'jane@example.com', '2345678901', DATEADD('DAY', 1, CURRENT_DATE), DATEADD('DAY', 5, CURRENT_DATE), 2, 600.00, 'RESERVED', 2, CURRENT_TIMESTAMP),
-(7, 'Robert Cheung', 'robert@example.com', '3456789012', DATEADD('DAY', 2, CURRENT_DATE), DATEADD('DAY', 7, CURRENT_DATE), 3, 1250.00, 'RESERVED', 1, CURRENT_TIMESTAMP);
-
--- for mysqwl
-/*INSERT INTO booking (room_id, guest_name, guest_email, guest_phone, check_in_date, check_out_date, number_of_guests, total_price, status, created_by, created_at)
+-- Inserting sample bookings
+INSERT INTO booking (room_id, guest_name, guest_email, guest_phone, check_in_date, check_out_date, number_of_guests, total_price, status, created_by, created_at)
 VALUES
 (1, 'John Chan', 'john@example.com', '1234567890', CURRENT_DATE, DATE_ADD(CURRENT_DATE, INTERVAL 3 DAY), 1, 300.00, 'RESERVED', 1, CURRENT_TIMESTAMP),
 (3, 'Jane Ng', 'jane@example.com', '2345678901', DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY), DATE_ADD(CURRENT_DATE, INTERVAL 5 DAY), 2, 600.00, 'RESERVED', 2, CURRENT_TIMESTAMP),
 (7, 'Robert Cheung', 'robert@example.com', '3456789012', DATE_ADD(CURRENT_DATE, INTERVAL 2 DAY), DATE_ADD(CURRENT_DATE, INTERVAL 7 DAY), 3, 1250.00, 'RESERVED', 1, CURRENT_TIMESTAMP);
-*/
 
 -- Update room availability based on bookings
 UPDATE room SET available = false WHERE id IN (1, 3, 7);
@@ -53,3 +44,46 @@ VALUES
 ('Lee Mei Ling', 'lee.meiling@example.com', '9234-5678', '456 Queen’s Rd, Central, Hong Kong', 'HKID', 'H123456789', '1985-10-20', 'Hong Kong', 'Regular', true, NULL, CURRENT_TIMESTAMP()),
 ('Wong Ka Wai', 'wong.ka.wai@example.com', '9345-6789', '789 King’s Rd, North Point, Hong Kong', 'National ID', 'ID12345678', '1975-03-25', 'Canada', 'Platinum', true, 'Allergic to feathers, needs hypoallergenic bedding', CURRENT_TIMESTAMP()),
 ('Ngai Siu Ping', 'ngai.siuping@example.com', '9456-7890', '101 Star St, Wan Chai, Hong Kong', 'Passport', 'P987654321', '1990-07-30', 'Spain', 'Silver', true, 'Early check-in when possible', CURRENT_TIMESTAMP());
+
+
+
+
+
+
+
+
+
+INSERT INTO facility_booking (facility_id, customer_id, booker_name, booker_email, booker_phone, 
+                             booking_date, start_time, end_time, number_of_people, total_cost, 
+                             purpose, special_requirements, status, created_by, created_at)
+VALUES 
+-- Confirmed booking for Conference Room A by a regular customer
+(1, 1, 'Chan Tai Man', 'chan@example.com', '9123-4567', 
+ CURRENT_DATE, '10:00:00', '12:00:00', 10, 100.00, 
+ 'Business Meeting', 'Need projector setup', 'CONFIRMED', 1, CURRENT_TIMESTAMP),
+
+-- Reserved booking for Swimming Pool by a hotel guest
+(2, NULL, 'John Smith', 'john.smith@example.com', '8765-4321', 
+ CURRENT_DATE, '14:00:00', '16:00:00', 4, 50.00, 
+ 'Family Recreation', 'Need towels', 'REQUESTED', 2, CURRENT_TIMESTAMP),
+
+-- Completed booking for Fitness Center by a member customer
+(3, 3, 'Wong Ka Wai', 'wong.ka.wai@example.com', '9345-6789', 
+ DATE_SUB(CURRENT_DATE, INTERVAL 1 DAY), '08:00:00', '09:00:00', 1, 15.00, 
+ 'Morning Workout', NULL, 'COMPLETED', 1, CURRENT_TIMESTAMP),
+
+-- Cancelled booking for Banquet Hall
+(4, 2, 'Lee Mei Ling', 'lee.meiling@example.com', '9234-5678', 
+ DATE_ADD(CURRENT_DATE, INTERVAL 7 DAY), '18:00:00', '21:00:00', 50, 300.00, 
+ 'Birthday Party', 'Vegetarian catering required', 'CANCELLED', 1, CURRENT_TIMESTAMP),
+
+-- Future booking for Conference Room A
+(1, NULL, 'Sarah Johnson', 'sarah@example.com', '7654-3210', 
+ DATE_ADD(CURRENT_DATE, INTERVAL 2 DAY), '13:00:00', '15:00:00', 6, 100.00, 
+ 'Interview Session', 'Need quiet environment', 'REQUESTED', 2, CURRENT_TIMESTAMP),
+
+-- Future booking for Swimming Pool
+(2, 4, 'Ngai Siu Ping', 'ngai.siuping@example.com', '9456-7890', 
+ DATE_ADD(CURRENT_DATE, INTERVAL 3 DAY), '10:00:00', '11:00:00', 2, 25.00, 
+ 'Swimming Lesson', NULL, 'CONFIRMED', 1, CURRENT_TIMESTAMP);
+ 

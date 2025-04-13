@@ -29,7 +29,7 @@ public class Customer {
     
     private String address;
     
-    private String idType;  // Passport, National ID, Driver's License, etc.
+    private String idType;  // Passport, HKID, Driver's License, etc.
     
     private String idNumber;
     

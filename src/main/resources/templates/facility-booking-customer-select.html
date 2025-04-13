@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Customer for Facility Booking - Hotel Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+	<style>
+	    .page-container {
+	        padding-top: 70px; /* Adjust  header*/
+	        padding-bottom: 60px; /* Adjust footer */
+	    }
+
+	    .footer {
+	        z-index: 1000;
+	    }
+	</style>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="fragments/header :: header"></div>
+    
+	<div class="container-fluid page-container"> // changed name 20250412
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2">
+                <div th:replace="fragments/sidebar :: sidebar"></div>
+            </div>
+            
+            <!-- Main Content -->
+            <main class="col-md-10 main-content p-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Select Customer for Facility Booking</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/facility-bookings}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Bookings
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Alerts -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <!-- Customer Search -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Search Customers</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/customers/search}" method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="name" name="name" placeholder="Search by Name">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="phone" name="phone" placeholder="Search by Phone">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary w-100">Search</button>
+                            </div>
+                            <input type="hidden" name="redirect" value="/facility-bookings/customer">
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Customers Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Select a Customer</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>VIP Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="customer : ${customers}">
+                                        <td th:text="${customer.id}"></td>
+                                        <td th:text="${customer.name}"></td>
+                                        <td th:text="${customer.email}"></td>
+                                        <td th:text="${customer.phoneNumber}"></td>
+                                        <td>
+                                            <span th:if="${customer.vipStatus == 'Regular'}" class="badge bg-secondary">Regular</span>
+                                            <span th:if="${customer.vipStatus == 'Silver'}" class="badge bg-secondary">Silver</span>
+                                            <span th:if="${customer.vipStatus == 'Gold'}" class="badge bg-warning text-dark">Gold</span>
+                                            <span th:if="${customer.vipStatus == 'Platinum'}" class="badge bg-danger">Platinum</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{/facility-bookings/customer/{id}(id=${customer.id})}" class="btn btn-sm btn-success">
+                                                    View Bookings
+                                                </a>
+                                                <a th:href="@{/facility-bookings/new(customerId=${customer.id})}" class="btn btn-sm btn-primary">
+                                                    New Booking
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${customers.empty}">
+                                        <td colspan="6" class="text-center">No customers found</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div th:replace="fragments/footer :: footer"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

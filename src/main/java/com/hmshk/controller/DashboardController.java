@@ -1,11 +1,14 @@
 package com.hmshk.controller;
 
 import com.hmshk.model.Booking;
+import com.hmshk.model.BookingStatus;
 import com.hmshk.model.Room;
 import com.hmshk.model.Facility;
+import com.hmshk.model.FacilityBooking;
 import com.hmshk.service.BookingService;
 import com.hmshk.service.RoomService;
 import com.hmshk.service.FacilityService;
+import com.hmshk.service.FacilityBookingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,12 +26,34 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DashboardController {
     
-    private final BookingService bookingService;
+    public BookingService getBookingService() {
+		return bookingService;
+	}
+
+	public RoomService getRoomService() {
+		return roomService;
+	}
+
+	public FacilityService getFacilityService() {
+		return facilityService;
+	}
+
+	public FacilityBookingService getFacilityBookingService() {
+		return facilityBookingService;
+	}
+
+	private final BookingService bookingService;
     private final RoomService roomService;
     private final FacilityService facilityService;
+    private final FacilityBookingService facilityBookingService;
     
-
-
+    public DashboardController(BookingService bookingService, RoomService roomService, 
+                              FacilityService facilityService, FacilityBookingService facilityBookingService) {
+        this.bookingService = bookingService;
+        this.roomService = roomService;
+        this.facilityService = facilityService;
+        this.facilityBookingService = facilityBookingService;
+    }
     
     @GetMapping("/")
     public String index(HttpSession session) {
@@ -54,6 +79,9 @@ public class DashboardController {
         LocalDate today = LocalDate.now();
         List<Booking> todayCheckouts = bookingService.getTodayCheckouts();
         List<Booking> todayCheckins = bookingService.getBookingsByDateRange(today, today);
+        
+        // Today's bookings for the dashboard table
+        List<Booking> todayBookings = bookingService.getBookingsByDateRange(today, today);
         
         // Calendar data - fetch bookings for the next 30 days
         LocalDate endDate = today.plusDays(30);
@@ -84,6 +112,7 @@ public class DashboardController {
                         color = "#6c757d"; // gray
                 }
                 event.put("backgroundColor", color);
+                event.put("status", booking.getStatus().toString());
                 
                 return event;
             })
@@ -91,6 +120,12 @@ public class DashboardController {
         
         // Facility data
         List<Facility> facilities = facilityService.getAllFacilities();
+        
+        // Today's facility bookings
+        List<FacilityBooking> todayFacilityBookingsList = facilityBookingService.getBookingsByDate(today);
+        
+        // Create facility booking calendar events
+        List<Map<String, Object>> facilityCalendarEvents = facilityBookingService.getCalendarEvents();
         
         // Room status breakdown
         int occupiedRooms = allRooms.size() - availableRooms.size();
@@ -105,16 +140,19 @@ public class DashboardController {
         model.addAttribute("needsCleaningCount", needsCleaningCount);
         model.addAttribute("todayCheckouts", todayCheckouts.size());
         model.addAttribute("todayCheckins", todayCheckins.size());
+        model.addAttribute("todayBookings", todayBookings); // Add today's bookings for the dashboard table
         model.addAttribute("upcomingBookings", upcomingBookings);
         model.addAttribute("calendarEvents", calendarEvents);
+        model.addAttribute("facilityCalendarEvents", facilityCalendarEvents);
         model.addAttribute("rooms", allRooms);
         model.addAttribute("facilities", facilities);
         model.addAttribute("today", today);
+        model.addAttribute("todayFacilityBookings", todayFacilityBookingsList.size());
+        model.addAttribute("todayFacilityBookingsList", todayFacilityBookingsList);
         
         return "dashboard";
     }
     
- // Add this to DashboardController.java
     @GetMapping("/api/dashboard/data")
     @ResponseBody
     public Map<String, Object> getDashboardData() {
@@ -128,10 +166,14 @@ public class DashboardController {
         LocalDate today = LocalDate.now();
         List<Booking> todayCheckouts = bookingService.getTodayCheckouts();
         List<Booking> todayCheckins = bookingService.getBookingsByDateRange(today, today);
+        List<Booking> todayBookings = bookingService.getBookingsByDateRange(today, today);
         
         // Calendar data
         List<Booking> upcomingBookings = bookingService.getBookingsByDateRange(today, today.plusDays(30));
         List<Map<String, Object>> calendarEvents = createCalendarEvents(upcomingBookings);
+        
+        // Facility bookings data
+        List<FacilityBooking> todayFacilityBookings = facilityBookingService.getBookingsByDate(today);
         
         // Room status data
         int occupiedRooms = allRooms.size() - availableRooms.size();
@@ -144,8 +186,11 @@ public class DashboardController {
         dashboardData.put("needsCleaningCount", needsCleaningCount);
         dashboardData.put("todayCheckouts", todayCheckouts.size());
         dashboardData.put("todayCheckins", todayCheckins.size());
+        dashboardData.put("todayBookings", todayBookings);
         dashboardData.put("calendarEvents", calendarEvents);
         dashboardData.put("rooms", allRooms);
+        dashboardData.put("todayFacilityBookings", todayFacilityBookings.size());
+        dashboardData.put("todayFacilityBookingsList", todayFacilityBookings);
         
         return dashboardData;
     }
@@ -176,13 +221,10 @@ public class DashboardController {
                         color = "#6c757d"; // gray
                 }
                 event.put("backgroundColor", color);
+                event.put("status", booking.getStatus().toString());
                 
                 return event;
             })
             .collect(Collectors.toList());
     }
 }
-
-
-
-

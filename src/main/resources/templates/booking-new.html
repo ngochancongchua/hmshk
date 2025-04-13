@@ -7,11 +7,21 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+	<style>
+	    .page-container {
+	        padding-top: 70px; /* Adjust  header*/
+	        padding-bottom: 60px; /* Adjust footer */
+	    }
+
+	    .footer {
+	        z-index: 1000;
+	    }
+	</style>
 </head>
 <body>
     <div th:replace="fragments/header :: header"></div>
     
-    <div class="container-fluid">
+    <div class="container-fluid page-container">
         <div class="row">
             <div class="col-md-2">
                 <div th:replace="fragments/sidebar :: sidebar"></div>
@@ -25,7 +35,22 @@
                     <div class="card-body">
                         <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
                         
-                        <form th:action="@{/bookings/create}" method="post">
+                        <!-- Booking Type Selection -->
+                        <div class="mb-4">
+                            <h6>Booking Type</h6>
+                            <div class="btn-group" role="group" aria-label="Booking Type">
+                                <input type="radio" class="btn-check" name="bookingType" id="guestBooking" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary" for="guestBooking">Guest Booking</label>
+                                
+                                <input type="radio" class="btn-check" name="bookingType" id="memberBooking" autocomplete="off">
+                                <label class="btn btn-outline-success" for="memberBooking">Member Booking</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Form for guest booking (shown by default) -->
+                        <form id="guestBookingForm" th:action="@{/bookings/create}" method="post">
+                            <input type="hidden" name="isGuestBooking" value="true">
+                            
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="guestName" class="form-label">Guest Name</label>
@@ -70,12 +95,94 @@
                                            min="1" value="1" required>
                                 </div>
                             </div>
-                            
+							<!-- For the guest booking form -->
+							<div class="form-check mb-3">
+							    <input class="form-check-input" type="checkbox" id="isRequest" name="isRequest" value="true">
+							    <label class="form-check-label" for="isRequest">
+							        Submit as booking request (needs admin approval)
+							    </label>
+							</div>
+
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-primary">Create Booking</button>
                                 <a th:href="@{/bookings}" class="btn btn-secondary">Cancel</a>
                             </div>
                         </form>
+                        
+                        <!-- Form for member booking (initially hidden) -->
+<form id="memberBookingForm" th:action="@{/bookings/create-member}" method="post" style="display: none;">
+  <input type="hidden" name="isGuestBooking" value="false">
+  
+  <div class="row mb-3">
+      <!-- Telephone Search Field -->
+      <div class="col-md-6 mb-2">
+          <label for="searchPhone" class="form-label">Search by Phone Number</label>
+          <input type="text" id="searchPhone" class="form-control" placeholder="Enter phone number">
+      </div>
+
+      <!-- Customer Dropdown -->
+      <div class="col-md-6">
+          <label for="customerId" class="form-label">Select Customer</label>
+          <select class="form-select" id="customerId" name="customerId" required>
+              <option value="">Select Customer</option>
+              <option th:each="customer : ${customers}" 
+                      th:value="${customer.id}" 
+                      th:text="${customer.name + ' (' + customer.phoneNumber + ')'}"
+                      th:attr="data-phone=${customer.phoneNumber}"></option>
+          </select>
+      </div>
+
+      <!-- Room Dropdown -->
+      <div class="col-md-6 mt-3">
+          <label for="memberRoomId" class="form-label">Room</label>
+          <select class="form-select" id="memberRoomId" name="roomId" required>
+              <option value="">Select Room</option>
+              <option th:each="room : ${rooms}" 
+                      th:value="${room.id}" 
+                      th:text="${room.roomNumber + ' - ' + room.roomType + ' ($' + room.pricePerNight + '/night)'}"></option>
+          </select>
+      </div>
+  </div>
+  
+  <div class="row mb-3">
+      <div class="col-md-4">
+          <label for="memberCheckInDate" class="form-label">Check-in Date</label>
+          <input type="date" class="form-control" id="memberCheckInDate" name="checkInDate" 
+                 th:min="${today}" required>
+      </div>
+      <div class="col-md-4">
+          <label for="memberCheckOutDate" class="form-label">Check-out Date</label>
+          <input type="date" class="form-control" id="memberCheckOutDate" name="checkOutDate" 
+                 th:min="${today}" required>
+      </div>
+      <div class="col-md-4">
+          <label for="memberNumberOfGuests" class="form-label">Number of Guests</label>
+          <input type="number" class="form-control" id="memberNumberOfGuests" name="numberOfGuests" 
+                 min="1" value="1" required>
+      </div>
+  </div>
+  
+  <div class="customer-details mt-4 mb-4 p-3 bg-light rounded">
+      <h6>Selected Customer Details</h6>
+      <div id="customerDetails">
+          <p class="text-muted">Select a customer to see their details</p>
+      </div>
+  </div>
+  <!-- For the member booking form -->
+  			<div class="form-check mb-3">
+  			    <input class="form-check-input" type="checkbox" id="memberIsRequest" name="isRequest" value="true">
+  			    <label class="form-check-label" for="memberIsRequest">
+  			        Submit as booking request (needs admin approval)
+  			    </label>
+  			</div>
+              
+  
+  <div class="mt-4">
+      <button type="submit" class="btn btn-success">Create Member Booking</button>
+      <a th:href="@{/bookings}" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+
                     </div>
                 </div>
             </div>
@@ -86,15 +193,80 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script th:src="@{/js/booking.js}"></script>
-    <script>
-        // Date validation for check-in and check-out dates
-        document.getElementById('checkInDate').addEventListener('change', function() {
-            document.getElementById('checkOutDate').min = this.value;
-            if (document.getElementById('checkOutDate').value < this.value) {
-                document.getElementById('checkOutDate').value = this.value;
-            }
+    <script th:inline="javascript">
+        // Customer data for member bookings
+        const customers = /*[[${customers}]]*/ [];
+        
+        $(document).ready(function() {
+            // Toggle between guest and member booking forms
+            $('#guestBooking').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#guestBookingForm').show();
+                    $('#memberBookingForm').hide();
+                }
+            });
+            
+            $('#memberBooking').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#memberBookingForm').show();
+                    $('#guestBookingForm').hide();
+                }
+            });
+            
+            // Date validation for check-in and check-out dates
+            $('#checkInDate, #memberCheckInDate').change(function() {
+                const checkOutId = $(this).attr('id') === 'checkInDate' ? 'checkOutDate' : 'memberCheckOutDate';
+                document.getElementById(checkOutId).min = this.value;
+                if (document.getElementById(checkOutId).value < this.value) {
+                    document.getElementById(checkOutId).value = this.value;
+                }
+            });
+            
+            // Show customer details when selected
+            $('#customerId').change(function() {
+                const selectedCustomerId = $(this).val();
+                if (selectedCustomerId) {
+                    // Find the customer in the customers array
+                    const customer = customers.find(c => c.id == selectedCustomerId);
+                    if (customer) {
+                        let html = `
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Name:</strong> ${customer.name}</p>
+                                    <p><strong>Email:</strong> ${customer.email}</p>
+                                    <p><strong>Phone:</strong> ${customer.phoneNumber}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>VIP Status:</strong> ${customer.vipStatus || 'Regular'}</p>
+                                    <p><strong>Nationality:</strong> ${customer.nationality || 'N/A'}</p>
+                                    <p><strong>ID:</strong> ${customer.idType ? (customer.idType + ': ' + customer.idNumber) : 'N/A'}</p>
+                                </div>
+                            </div>
+                        `;
+                        $('#customerDetails').html(html);
+                    }
+                } else {
+                    $('#customerDetails').html('<p class="text-muted">Select a customer to see their details</p>');
+                }
+            });
         });
     </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+          const searchInput = document.getElementById("searchPhone");
+          const customerSelect = document.getElementById("customerId");
+  
+          searchInput.addEventListener("input", function () {
+              const searchValue = this.value.toLowerCase().trim();
+  
+              for (const option of customerSelect.options) {
+                  const phone = option.getAttribute("data-phone") || "";
+                  const isMatch = phone.toLowerCase().includes(searchValue) || searchValue === "";
+                  option.style.display = isMatch ? "block" : "none";
+              }
+          });
+      });
+  </script>
+  
 </body>
 </html>

@@ -5,6 +5,18 @@ body {
     flex-direction: column;
 }
 
+
+body {
+  background-image: url('/image/photo-beach-town-view-from.jpg');
+  background-size: cover;       /* Adjusts image to cover entire background */
+  background-repeat: no-repeat; /* Prevents image from repeating */
+  background-position: center;  /* Centers the image */
+}
+
+
+
+
+
 .main-content {
     min-height: calc(100vh - 56px - 56px); /* Viewport height minus header and footer */
 }

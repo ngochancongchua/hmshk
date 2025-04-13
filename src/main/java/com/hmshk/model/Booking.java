@@ -80,8 +80,18 @@ public class Booking {
 	public void setCustomer(Customer customer) {
 		this.customer = customer;
 	}
+	@Column
+	private String rejectionReason;
 
-	// Getters and setters (unchanged, kept for clarity)
+	public String getRejectionReason() {
+	    return rejectionReason;
+	}
+
+	public void setRejectionReason(String rejectionReason) {
+	    this.rejectionReason = rejectionReason;
+	}
+
+	// Getters and setters 都由eclipse自動生成的，不需要改，疊在一起
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Room getRoom() { return room; }

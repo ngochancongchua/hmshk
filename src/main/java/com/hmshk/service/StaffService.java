@@ -1,5 +1,6 @@
 package com.hmshk.service;
 
+import com.hmshk.model.Role;
 import com.hmshk.model.Staff;
 import com.hmshk.repository.StaffRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,10 @@ public class StaffService {
     
     private final StaffRepository staffRepository;
     
-
+    public StaffService(StaffRepository staffRepository) {
+        this.staffRepository = staffRepository;
+    }
+    
     
     public Staff registerStaff(Staff staff) {
         if (staffRepository.existsByUsername(staff.getUsername())) {

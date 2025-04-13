@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facility Bookings - Hotel Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .fc-event {
+            cursor: pointer;
+        }
+        .fc-event.requested {
+            background-color: #ffc107;
+            border-color: #e0a800;
+        }
+        .fc-event.confirmed {
+            background-color: #28a745;
+            border-color: #218838;
+        }
+        .fc-event.completed {
+            background-color: #6c757d;
+            border-color: #5a6268;
+        }
+        .fc-event.cancelled {
+            background-color: #dc3545;
+            border-color: #c82333;
+            text-decoration: line-through;
+        }
+        .fc-day-today {
+            background-color: rgba(0, 123, 255, 0.1) !important;
+        }
+        .view-toggle-btn.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+    </style>
+	<style>
+	    .page-container {
+	        padding-top: 70px; /* Adjust  header*/
+	        padding-bottom: 60px; /* Adjust footer */
+	    }
+
+	    .footer {
+	        z-index: 1000;
+	    }
+	</style>
+</head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+    
+    <div class="container-fluid page-container">
+        <div class="row">
+            <div class="col-md-2">
+                <div th:replace="fragments/sidebar :: sidebar"></div>
+            </div>
+            
+            <div class="col-md-10 main-content p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Facility Bookings</h2>
+                    <div class="d-flex">
+                        <a th:href="@{/facility-bookings/customer}" class="btn btn-outline-info me-2">
+                            <i class="bi bi-person"></i> By Customer
+                        </a>
+                        <a th:href="@{/facility-bookings/new}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> New Booking
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Success and error messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <!-- Filters Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Filters</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/facility-bookings}" method="get" class="row g-3">
+                            <div class="col-md-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="">All Statuses</option>
+                                    <option value="REQUESTED" th:selected="${param.status != null && param.status[0] == ''}">Requested</option>
+                                    <option value="CONFIRMED" th:selected="${param.status != null && param.status[0] == 'CONFIRMED'}">Confirmed</option>
+                                    <option value="COMPLETED" th:selected="${param.status != null && param.status[0] == 'COMPLETED'}">Completed</option>
+                                    <option value="CANCELLED" th:selected="${param.status != null && param.status[0] == 'CANCELLED'}">Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="facilityId" class="form-label">Facility</label>
+                                <select class="form-select" id="facilityId" name="facilityId">
+                                    <option value="">All Facilities</option>
+                                    <option th:each="facility : ${facilities}" 
+                                            th:value="${facility.id}" 
+                                            th:text="${facility.name}"
+                                            th:selected="${param.facilityId != null && param.facilityId[0] == facility.id.toString()}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="date" class="form-label">Booking Date</label>
+                                <input type="date" class="form-control" id="date" name="date" th:value="${param.date != null ? param.date[0] : ''}">
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
+                                <a th:href="@{/facility-bookings}" class="btn btn-secondary">Clear</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- View Toggle Buttons -->
+                <div class="d-flex justify-content-end mb-3">
+                    <div class="btn-group" role="group" aria-label="View toggle">
+                        <button type="button" class="btn btn-outline-primary view-toggle-btn active" data-view="calendar">
+                            <i class="bi bi-calendar3"></i> Calendar
+                        </button>
+                        <button type="button" class="btn btn-outline-primary view-toggle-btn" data-view="table">
+                            <i class="bi bi-table"></i> Table
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Calendar Card -->
+                <div class="card mb-4" id="calendarView">
+                    <div class="card-header">
+                        <h5 class="mb-0">Booking Calendar</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="bookingCalendar" style="height: 500px;"></div>
+                    </div>
+                </div>
+                
+                <!-- Bookings Table Card -->
+                <div class="card" id="tableView" style="display: none;">
+                    <div class="card-header">
+                        <h5 class="mb-0">All Facility Bookings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Facility</th>
+                                        <th>Booker</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>People</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="booking : ${bookings}">
+                                        <td th:text="${booking.id}"></td>
+                                        <td th:text="${booking.facility.name}"></td>
+                                        <td>
+                                            <span th:text="${booking.bookerName}"></span>
+                                            <span th:if="${booking.customer != null}" class="badge bg-info">Member</span>
+                                        </td>
+                                        <td th:text="${#temporals.format(booking.bookingDate, 'yyyy-MM-dd')}"></td>
+                                        <td th:text="${#temporals.format(booking.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(booking.endTime, 'HH:mm')}"></td>
+                                        <td th:text="${booking.numberOfPeople}"></td>
+                                        <td>
+                                            <span th:if="${booking.status == T(com.hmshk.model.FacilityBookingStatus).REQUESTED}" class="badge bg-warning">Requested</span>
+                                            <span th:if="${booking.status == T(com.hmshk.model.FacilityBookingStatus).CONFIRMED}" class="badge bg-success">Confirmed</span>
+                                            <span th:if="${booking.status == T(com.hmshk.model.FacilityBookingStatus).CANCELLED}" class="badge bg-danger">Cancelled</span>
+                                            <span th:if="${booking.status == T(com.hmshk.model.FacilityBookingStatus).COMPLETED}" class="badge bg-secondary">Completed</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a th:href="@{/facility-bookings/{id}(id=${booking.id})}" class="btn btn-sm btn-info" title="View">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a th:href="@{/facility-bookings/edit/{id}(id=${booking.id})}" class="btn btn-sm btn-primary" title="Modify">
+                                                    <i class="bi bi-pencil"></i> Modify
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${bookings.empty}">
+                                        <td colspan="8" class="text-center">No facility bookings found</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="fragments/footer :: footer"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <script th:inline="javascript">
+        // Calendar events data from the server
+        const calendarEvents = /*[[${calendarEvents}]]*/ [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize calendar
+            const calendarEl = document.getElementById('bookingCalendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: calendarEvents,
+                eventClick: function(info) {
+                    // Navigate directly to the booking details page
+                    window.location.href = '/facility-bookings/' + info.event.id;
+                },
+                eventClassNames: function(arg) {
+                    // Set class based on booking status
+                    const status = arg.event.extendedProps.status.toLowerCase();
+                    return [status];
+                },
+                height: 500
+            });
+            
+            calendar.render();
+            
+            // View toggle functionality
+            $('.view-toggle-btn').on('click', function() {
+                $('.view-toggle-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                const view = $(this).data('view');
+                if (view === 'calendar') {
+                    $('#calendarView').show();
+                    $('#tableView').hide();
+                } else {
+                    $('#calendarView').hide();
+                    $('#tableView').show();
+                }
+            });
+            
+            // Handle facility filter for calendar
+            $('#facilityId').on('change', function() {
+                applyFilters();
+            });
+            
+            // Handle status filter for calendar
+            $('#status').on('change', function() {
+                applyFilters();
+            });
+            
+            // Handle date filter for calendar
+            $('#date').on('change', function() {
+                applyFilters();
+            });
+            
+            // Function to apply all filters together
+            function applyFilters() {
+                const facilityId = $('#facilityId').val();
+                const status = $('#status').val();
+                const date = $('#date').val();
+                
+                calendar.getEvents().forEach(event => {
+                    let display = true;
+                    
+                    // Filter by facility
+                    if (facilityId && event.extendedProps.facilityId != facilityId) {
+                        display = false;
+                    }
+                    
+                    // Filter by status
+                    if (status && event.extendedProps.status !== status) {
+                        display = false;
+                    }
+                    
+                    // Filter by date
+                    if (date && event.startStr.substring(0, 10) !== date) {
+                        display = false;
+                    }
+                    
+                    // Apply visibility
+                    event.setProp('display', display ? 'auto' : 'none');
+                });
+            }
+            
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 5000);
+            
+            // Highlight selected row when clicked
+            $('tbody tr').click(function() {
+                $(this).toggleClass('table-primary').siblings().removeClass('table-primary');
+            });
+        });
+
+        // Helper functions for formatting
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        function formatTime(timeString) {
+            if (!timeString) return 'N/A';
+            return timeString.substring(0, 5);
+        }
+
+        function formatStatus(status) {
+            if (!status) return 'Unknown';
+            return status.charAt(0) + status.slice(1).toLowerCase();
+        }
+
+        function getBadgeClass(status) {
+            if (!status) return 'bg-secondary';
+            
+            switch(status) {
+                case 'REQUESTED': return 'bg-warning';
+                case 'CONFIRMED': return 'bg-success';
+                case 'CANCELLED': return 'bg-danger';
+                case 'COMPLETED': return 'bg-secondary';
+                default: return 'bg-primary';
+            }
+        }
+    </script>
+</body>
+</html>

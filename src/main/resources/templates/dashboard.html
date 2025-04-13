@@ -2,139 +2,311 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-	<meta http-equiv="refresh" content="300">
+    <meta http-equiv="refresh" content="300">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Hotel Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css">
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
-	<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css" rel="stylesheet">
-	<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js"></script>
+    <style>
+        .fc-event {
+            cursor: pointer;
+        }
+        .fc-event.reserved {
+            background-color: #fd7e14;
+            border-color: #fd7e14;
+        }
+        .fc-event.checked_in {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        .fc-event.checked_out {
+            background-color: #0dcaf0;
+            border-color: #0dcaf0;
+        }
+        .fc-event.cancelled {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            text-decoration: line-through;
+        }
+        .fc-day-today {
+            background-color: rgba(0, 123, 255, 0.1) !important;
+        }
+        /* Fixed size for stats cards */
+        .stats-card {
+            height: 150px;
+            width: 100%;
+        }
+		.page-container {
+		    padding-top: 70px; /* Adjust  header*/
+		    padding-bottom: 60px; /* Adjust footer */
+		}
+
+		.footer {
+		    z-index: 1000;
+		}
+		
+
+
+		
+    </style>
 </head>
 <body>
     <div th:replace="fragments/header :: header"></div>
     
-    <div class="container-fluid">
+    <div class="container-fluid page-container">
         <div class="row">
             <div class="col-md-2">
                 <div th:replace="fragments/sidebar :: sidebar"></div>
             </div>
             
             <div class="col-md-10 main-content p-4">
-                <h2 class="mb-4">Dashboard</h2>
+
                 
-                <!-- Stats Cards -->
-                <div class="row">
+                <!-- Stats Cards with fixed size -->
+				<div class="row">
+				                    <div class="col-md-3 mb-4">
+				                        <div class="card bg-warning text-dark stats-card">
+				                            <div class="card-body">
+				                                <h5 class="card-title">Housekeeping Needs</h5>
+				                                <h2 class="card-text" th:text="${needsCleaningCount}">0</h2>
+				                                <p class="small mb-0">Rooms requiring cleaning</p>
+				                            </div>
+				                        </div>
+				                    </div>
                     <div class="col-md-3 mb-4">
-                        <div class="card bg-primary text-white">
-                            <div class="card-body">
-                                <h5 class="card-title">Total Rooms</h5>
-                                <h2 class="card-text" th:text="${totalRooms}">0</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-4">
-                        <div class="card bg-success text-white">
-                            <div class="card-body">
-                                <h5 class="card-title">Available Rooms</h5>
-                                <h2 class="card-text" th:text="${availableRooms}">0</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-4">
-                        <div class="card bg-danger text-white">
-                            <div class="card-body">
-                                <h5 class="card-title">Reserved Rooms</h5>
-                                <h2 class="card-text" th:text="${occupiedRooms}">0</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-4">
-                        <div class="card bg-info text-white">
+                        <div class="card bg-success text-white stats-card">
                             <div class="card-body">
                                 <h5 class="card-title">Today's Check-ins</h5>
                                 <h2 class="card-text" th:text="${todayCheckins}">0</h2>
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="card bg-danger text-white stats-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Today's Check-outs</h5>
+                                <h2 class="card-text" th:text="${todayCheckouts}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="card bg-info text-white stats-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Today's Facility Bookings</h5>
+                                <h2 class="card-text" th:text="${todayFacilityBookings != null ? todayFacilityBookings : 0}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+				<!-- Quick Access Cards -->
+				<div class="row">
+				    <div class="col-md-3 mb-4">
+				        <a th:href="@{/bookings/new}" class="card bg-light h-100 text-decoration-none">
+				            <div class="card-body text-center">
+				                <i class="bi bi-calendar-plus text-primary" style="font-size: 2rem;"></i>
+				                <h5 class="card-title mt-3">New Booking</h5>
+				            </div>
+				        </a>
+				    </div>
+				    <div class="col-md-3 mb-4">
+				        <a th:href="@{/checkin-checkout}" class="card bg-light h-100 text-decoration-none">
+				            <div class="card-body text-center">
+				                <i class="bi bi-box-arrow-in-right text-success" style="font-size: 2rem;"></i>
+				                <h5 class="card-title mt-3">Check-in/Check-out</h5>
+				            </div>
+				        </a>
+				    </div>
+				    <div class="col-md-3 mb-4">
+				        <a th:href="@{/facility-bookings/new}" class="card bg-light h-100 text-decoration-none">
+				            <div class="card-body text-center">
+				                <i class="bi bi-building text-danger" style="font-size: 2rem;"></i>
+				                <h5 class="card-title mt-3">New Facility Booking</h5>
+				            </div>
+				        </a>
+				    </div>
+				    <div class="col-md-3 mb-4">
+				        <a th:href="@{/customers/new}" class="card bg-light h-100 text-decoration-none">
+				            <div class="card-body text-center">
+				                <i class="bi bi-person-plus text-info" style="font-size: 2rem;"></i>
+				                <h5 class="card-title mt-3">New Customer</h5>
+				            </div>
+				        </a>
+				    </div>
+				</div>
+                
+                <!-- Room and Facility Booking Calendars Side by Side -->
+                <div class="row">
+                    <!-- Room Booking Calendar -->
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5>Room Booking Calendar</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="roomBookingCalendar" style="height: 500px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Facility Booking Calendar -->
+                    <div class="col-md-6">
+                        <div class="card mb-4" id="calendarView">
+                            <div class="card-header">
+                                <h5 class="mb-0">Facility Booking Calendar</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="facilityBookingCalendar" style="height: 500px;"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-				<!-- Room Status Grid in dashboard.html -->
+                <!-- Today's Room Booking Status -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Today's Room Bookings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Room</th>
+                                        <th>Guest</th>
+                                        <th>Check-in</th>
+                                        <th>Check-out</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="booking : ${todayBookings}" th:if="${todayBookings != null}">
+                                        <td th:text="${booking.room.roomNumber + ' (' + booking.room.roomType + ')'}"></td>
+                                        <td>
+                                            <span th:text="${booking.guestName}"></span>
+                                            <span th:if="${booking.customer != null}" class="badge bg-info">Member</span>
+                                        </td>
+                                        <td th:text="${#temporals.format(booking.checkInDate, 'yyyy-MM-dd')}"></td>
+                                        <td th:text="${#temporals.format(booking.checkOutDate, 'yyyy-MM-dd')}"></td>
+                                        <td>
+                                            <span th:if="${booking.status.name() == 'RESERVED'}" class="badge bg-warning">Reserved</span>
+                                            <span th:if="${booking.status.name() == 'CHECKED_IN'}" class="badge bg-success">Checked In</span>
+                                            <span th:if="${booking.status.name() == 'CHECKED_OUT'}" class="badge bg-info">Checked Out</span>
+                                            <span th:if="${booking.status.name() == 'CANCELLED'}" class="badge bg-danger">Cancelled</span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn btn-sm btn-info">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${todayBookings == null || todayBookings.isEmpty()}">
+                                        <td colspan="6" class="text-center">No room bookings for today</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Today's Facility Booking Status -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Today's Facility Bookings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Facility</th>
+                                        <th>Booker</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                        <th>People</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="booking : ${todayFacilityBookingsList}" th:if="${todayFacilityBookingsList != null}">
+                                        <td th:text="${booking.facility.name}"></td>
+                                        <td>
+                                            <span th:text="${booking.bookerName}"></span>
+                                            <span th:if="${booking.customer != null}" class="badge bg-info">Member</span>
+                                        </td>
+                                        <td th:text="${#temporals.format(booking.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(booking.endTime, 'HH:mm')}"></td>
+                                        <td>
+                                            <span th:if="${booking.status.name() == 'REQUESTED'}" class="badge bg-warning">Requested</span>
+                                            <span th:if="${booking.status.name() == 'CONFIRMED'}" class="badge bg-success">Confirmed</span>
+                                            <span th:if="${booking.status.name() == 'CANCELLED'}" class="badge bg-danger">Cancelled</span>
+                                            <span th:if="${booking.status.name() == 'COMPLETED'}" class="badge bg-secondary">Completed</span>
+                                        </td>
+                                        <td th:text="${booking.numberOfPeople}"></td>
+                                        <td>
+                                            <a th:href="@{/facility-bookings/{id}(id=${booking.id})}" class="btn btn-sm btn-info">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${todayFacilityBookingsList == null || todayFacilityBookingsList.isEmpty()}">
+                                        <td colspan="6" class="text-center">No facility bookings for today</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+				<!-- Rooms Needing Cleaning Today -->
 				<div class="card mb-4">
 				    <div class="card-header d-flex justify-content-between align-items-center">
-				        <h5>Room Status</h5>
-				        <div>
-				            <span class="badge bg-success me-2">Available: <span th:text="${availableRooms}"></span></span>
-				            <span class="badge bg-danger me-2">Reserved: <span th:text="${occupiedRooms}"></span></span>
-				            <span class="badge bg-warning text-dark">Needs Cleaning: <span th:text="${needsCleaningCount}"></span></span>
-				        </div>
+				        <h5 class="mb-0">
+				            <i class="bi bi-exclamation-triangle me-2 text-warning"></i>Rooms Needing Cleaning Today
+				        </h5>
+				    <!-- ok i will add later     <a th:href="@{/housekeeping}" class="btn btn-sm btn-outline-warning">
+				            <i class="bi bi-brush me-1"></i> Go to Housekeeping
+				        </a> -->
 				    </div>
 				    <div class="card-body">
-				        <div class="room-grid">
-				            <div th:each="room : ${rooms}" 
-				                 th:class="${room.available ? 'room available' : 'room occupied'}"
-				                 th:classappend="${room.needsCleaning ? 'needs-cleaning' : ''}">
-				                <div class="room-number" th:text="${room.roomNumber}"></div>
-				                <div class="room-type" th:text="${room.roomType}"></div>
-				                <div class="room-status">
-				                    <span th:if="${room.available && !room.needsCleaning}" class="badge bg-success">Available</span>
-				                    <span th:if="${!room.available}" class="badge bg-danger">Reserved</span>
-				                    <span th:if="${room.needsCleaning}" class="badge bg-warning text-dark">Needs Cleaning</span>
-				                </div>
-				            </div>
-				        </div>
-				    </div>
-				</div>
-				
-				<!-- facility status -->
-				<div class="card mb-4">
-				    <div class="card-header">
-				        <h5>Facility Status</h5>
-				    </div>
-				    <div class="card-body">
-				        <div class="row">
-				            <div th:each="facility : ${facilities}" class="col-md-4 mb-3">
-				                <div th:class="${facility.available ? 'card bg-light border-success' : 'card bg-light border-danger'}"
-				                     style="border-width: 2px;">
-				                    <div class="card-body">
-				                        <h5 class="card-title" th:text="${facility.name}"></h5>
-				                        <p class="card-text" th:text="${facility.description}"></p>
-				                        <div class="d-flex justify-content-between align-items-center">
-				                            <span>
-				                                <i class="bi bi-people-fill me-1"></i>
-				                                <span th:text="${facility.capacity}"></span>
-				                            </span>
-				                            <span>
-				                                <i class="bi bi-currency-dollar me-1"></i>
-				                                <span th:text="${facility.costPerHour}"></span>/hr
-				                            </span>
-				                            <span th:if="${facility.available}" class="badge bg-success">Available</span>
-				                            <span th:unless="${facility.available}" class="badge bg-danger">Unavailable</span>
-				                        </div>
-				                    </div>
-				                </div>
-				            </div>
-				            <div th:if="${facilities.isEmpty()}" class="col-12 text-center">
-				                <p>No facilities found</p>
-				            </div>
+				        <div class="table-responsive">
+				            <table class="table table-striped table-hover">
+				                <thead>
+				                    <tr>
+				                        <th>Room Number</th>
+				                        <th>Type</th>
+				                        <th>Status</th>
+				                        <th>Actions</th>
+				                    </tr>
+				                </thead>
+				                <tbody>
+				                    <tr th:each="room : ${rooms}" th:if="${room.needsCleaning}">
+				                        <td th:text="${room.roomNumber}"></td>
+				                        <td th:text="${room.roomType}"></td>
+				                        <td>
+				                            <span class="badge bg-warning">Needs Cleaning</span>
+				                        </td>
+				                        <td>
+				                            <a th:href="@{/housekeeping}" class="btn btn-sm btn-success">
+				                                <i class="bi bi-check-circle"></i> Mark Cleaned
+				                            </a>
+				                        </td>
+				                    </tr>
+				                    <tr th:if="${rooms == null || #lists.isEmpty(rooms.?[needsCleaning])}">
+				                        <td colspan="4" class="text-center">
+				                            <div class="py-3">
+				                                <i class="bi bi-emoji-smile text-success me-2"></i>
+				                                All rooms are clean! There are no rooms that need cleaning at the moment.
+				                            </div>
+				                        </td>
+				                    </tr>
+				                </tbody>
+				            </table>
 				        </div>
 				    </div>
 				</div>
                 
-                <!-- Calendar -->
-				<!-- Update the calendar section in dashboard.html -->
-				<div class="card">
-				    <div class="card-header">
-				        <h5>Booking Calendar</h5>
-				    </div>
-				    <div class="card-body">
-				        <!-- Add explicit height to the calendar container -->
-				        <div id="calendar" style="height: 600px;"></div>
-				    </div>
-				</div>
-
             </div>
         </div>
     </div>
@@ -143,55 +315,186 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js"></script>
-    <script th:src="@{/js/calendar.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    
+    <!-- Room Booking Calendar Script -->
     <script th:inline="javascript">
-        // Calendar events data (bookings)
-        const bookings = /*[[${weeklyBookings}]]*/ [];
+        // Calendar events data from the server
+        const roomCalendarEvents = /*[[${calendarEvents}]]*/ [];
         
         document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.getElementById('calendar');
+            // Initialize calendar
+            const calendarEl = document.getElementById('roomBookingCalendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridWeek',
+                initialView: 'dayGridMonth',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
-				events: bookings.map(booking => ({
-				                    title: `${booking.guestName} - Room ${booking.room.roomNumber}`,
-				                    start: booking.checkInDate,
-				                    end: booking.checkOutDate,
-				                    backgroundColor: booking.status === 'RESERVED' ? '#fd7e14' : 
-				                                     booking.status === 'CHECKED_IN' ? '#dc3545' : 
-				                                     booking.status === 'CHECKED_OUT' ? '#198754' : '#6c757d'
-				                })),
-				                eventClick: function(info) {
-				                    // Could show booking details in a modal
-				                    alert(`Booking: ${info.event.title}`);
-				                }
-				            });
-				            calendar.render();
-				        });
-				    </script>
-					
-					<script th:inline="javascript">
-									    // This ensures the calendar data is fresh every time
-									    const calendarEventsData = /*[[${calendarEvents}]]*/ [];
-									    
-									    // Current date for highlighting today
-									    const today = /*[[${today}]]*/ new Date().toISOString().split('T')[0];
-									</script>
-									
-									<!-- Add this right before the closing </body> tag in dashboard.html -->
-									<script th:inline="javascript">
-									    // Get booking data from Thymeleaf model
-									    const bookings = /*[[${weeklyBookings}]]*/ [];
-									    console.log("Bookings data for calendar:", bookings);
-									</script>
+                events: roomCalendarEvents,
+                eventClick: function(info) {
+                    // Navigate to the booking details page
+                    window.location.href = '/bookings/' + info.event.id;
+                },
+                eventClassNames: function(arg) {
+                    // Set class based on booking status
+                    if (arg.event.extendedProps && arg.event.extendedProps.status) {
+                        const status = arg.event.extendedProps.status.toLowerCase();
+                        return [status.replace(' ', '_')];
+                    }
+                    // Default class if status is not available
+                    return ['reserved'];
+                },
+                height: 500
+            });
+            
+            calendar.render();
+        });
+    </script>
+	
+    <!-- Facility Booking Calendar Script -->
+    <script th:inline="javascript">
+        // Calendar events data from the server
+        const facilityCalendarEvents = /*[[${facilityCalendarEvents}]]*/ [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize calendar
+            const calendarEl = document.getElementById('facilityBookingCalendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: facilityCalendarEvents,
+                eventClick: function(info) {
+                    // Navigate directly to the booking details page
+                    window.location.href = '/facility-bookings/' + info.event.id;
+                },
+                eventClassNames: function(arg) {
+                    // Set class based on booking status
+                    if (arg.event.extendedProps && arg.event.extendedProps.status) {
+                        const status = arg.event.extendedProps.status.toLowerCase();
+                        return [status];
+                    }
+                    // Default class if status is not available
+                    return ['requested'];
+                },
+                height: 500
+            });
+            
+            calendar.render();
+            
+            // View toggle functionality
+            $('.view-toggle-btn').on('click', function() {
+                $('.view-toggle-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                const view = $(this).data('view');
+                if (view === 'calendar') {
+                    $('#calendarView').show();
+                    $('#tableView').hide();
+                } else {
+                    $('#calendarView').hide();
+                    $('#tableView').show();
+                }
+            });
+            
+            // Handle facility filter for calendar
+            $('#facilityId').on('change', function() {
+                applyFilters();
+            });
+            
+            // Handle status filter for calendar
+            $('#status').on('change', function() {
+                applyFilters();
+            });
+            
+            // Handle date filter for calendar
+            $('#date').on('change', function() {
+                applyFilters();
+            });
+            
+            // Function to apply all filters together
+            function applyFilters() {
+                const facilityId = $('#facilityId').val();
+                const status = $('#status').val();
+                const date = $('#date').val();
+                
+                calendar.getEvents().forEach(event => {
+                    let display = true;
+                    
+                    // Filter by facility
+                    if (facilityId && event.extendedProps.facilityId != facilityId) {
+                        display = false;
+                    }
+                    
+                    // Filter by status
+                    if (status && event.extendedProps.status !== status) {
+                        display = false;
+                    }
+                    
+                    // Filter by date
+                    if (date && event.startStr.substring(0, 10) !== date) {
+                        display = false;
+                    }
+                    
+                    // Apply visibility
+                    event.setProp('display', display ? 'auto' : 'none');
+                });
+            }
+        });
 
-									<!-- Make sure calendar.js is loaded AFTER the data is defined -->
-									<script th:src="@{/js/calendar.js}"></script>
-									
-				</body>
-				</html>
+        // Helper functions for formatting
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        function formatTime(timeString) {
+            if (!timeString) return 'N/A';
+            return timeString.substring(0, 5);
+        }
+
+        function formatStatus(status) {
+            if (!status) return 'Unknown';
+            return status.charAt(0) + status.slice(1).toLowerCase();
+        }
+
+        function getBadgeClass(status) {
+            if (!status) return 'bg-secondary';
+            
+            switch(status) {
+                case 'REQUESTED': return 'bg-warning';
+                case 'CONFIRMED': return 'bg-success';
+                case 'CANCELLED': return 'bg-danger';
+                case 'COMPLETED': return 'bg-secondary';
+                default: return 'bg-primary';
+            }
+        }
+    </script>
+    
+    <!-- Common scripts for all elements -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Highlight selected row when clicked
+            $('tbody tr').click(function() {
+                $(this).toggleClass('table-primary').siblings().removeClass('table-primary');
+            });
+            
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

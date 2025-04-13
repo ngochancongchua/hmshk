@@ -21,7 +21,10 @@ public class RoomController {
     private final RoomService roomService;
     
     //added
-
+    // 有些debugger suggest不需要的，但絕對要的！不可以刪！
+    public RoomController(RoomService roomService) {
+        this.roomService = roomService;
+    }
     //end
     
     @GetMapping("/rooms")

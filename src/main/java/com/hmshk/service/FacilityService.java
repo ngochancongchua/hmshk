@@ -2,6 +2,7 @@ package com.hmshk.service;
 
 import com.hmshk.model.Facility;
 import com.hmshk.repository.FacilityRepository;
+import com.hmshk.repository.RoomRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,10 @@ public class FacilityService {
     private final FacilityRepository facilityRepository;
     
     
-
+    public FacilityService(FacilityRepository facilityRepository) {
+        this.facilityRepository = facilityRepository;
+    }
+    
     
     public List<Facility> getAllFacilities() {
         return facilityRepository.findAll();

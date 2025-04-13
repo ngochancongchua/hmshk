@@ -14,12 +14,9 @@ import java.util.Optional;
 @Controller
 public class FacilityController {
     
-
-
-    
-
     private final FacilityService facilityService;
     
+    // 有些debugger suggest不需要的，但絕對要的！不可以刪！
     public FacilityController(FacilityService facilityService) {
         this.facilityService = facilityService;
     }

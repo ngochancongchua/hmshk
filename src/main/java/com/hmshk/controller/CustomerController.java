@@ -1,7 +1,9 @@
 package com.hmshk.controller;
 
 import com.hmshk.model.Customer;
+import com.hmshk.service.BookingService;
 import com.hmshk.service.CustomerService;
+import com.hmshk.service.RoomService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -17,8 +19,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CustomerController {
     
+    public CustomerService getCustomerService() {
+		return customerService;
+	}
+
+	private final CustomerService customerService;
     
-    private final CustomerService customerService;
+    // 有些debugger suggest不需要的，但絕對要的！不可以刪！
+    public CustomerController(CustomerService customerService) {
+        this.customerService = customerService;
+    }
     
     @GetMapping("/customers")
     public String viewCustomers(Model model, HttpSession session) {

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Facility Booking - Hotel Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+	<style>
+	    .page-container {
+	        padding-top: 70px; /* Adjust  header*/
+	        padding-bottom: 60px; /* Adjust footer */
+	    }
+
+	    .footer {
+	        z-index: 1000;
+	    }
+	</style>
+</head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+    
+    <div class="container-fluid page-container">
+        <div class="row">
+            <div class="col-md-2">
+                <div th:replace="fragments/sidebar :: sidebar"></div>
+            </div>
+            
+            <div class="col-md-10 main-content p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Edit Facility Booking</h2>
+                    <a th:href="@{/facility-bookings}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Bookings
+                    </a>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Booking Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/facility-bookings/save}" method="post" class="needs-validation" th:object="${bookingRequest}" novalidate>
+                            <input type="hidden" th:field="*{id}" />
+                            <input type="hidden" th:field="*{status}" />
+                            <input type="hidden" th:field="*{totalCost}" />
+                            <input type="hidden" th:field="*{createdAt}" />
+                            <input type="hidden" name="createdBy.id" th:value="${bookingRequest.createdBy != null ? bookingRequest.createdBy.id : ''}" />
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="facilityId" class="form-label">Facility</label>
+                                    <select class="form-select" id="facilityId" name="facilityId" required>
+                                        <option value="">Select a facility</option>
+                                        <option th:each="facility : ${facilities}" 
+                                                th:value="${facility.id}" 
+                                                th:text="${facility.name + ' - $' + facility.costPerHour + '/hr'}"
+                                                th:selected="${bookingRequest.facility != null && bookingRequest.facility.id == facility.id}"></option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a facility</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="customerId" class="form-label">Customer (Optional)</label>
+                                    <select class="form-select" id="customerId" name="customerId">
+                                        <option value="">None (Guest Booking)</option>
+                                        <option th:each="customer : ${customers}" 
+                                                th:value="${customer.id}" 
+                                                th:text="${customer.name + ' - ' + customer.phoneNumber}"
+                                                th:selected="${bookingRequest.customer != null && bookingRequest.customer.id == customer.id}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="bookerName" class="form-label">Booker Name</label>
+                                    <input type="text" class="form-control" id="bookerName" th:field="*{bookerName}" required>
+                                    <div class="invalid-feedback">Booker name is required</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="bookerEmail" class="form-label">Booker Email</label>
+                                    <input type="email" class="form-control" id="bookerEmail" th:field="*{bookerEmail}" required>
+                                    <div class="invalid-feedback">Valid email is required</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="bookerPhone" class="form-label">Booker Phone</label>
+                                    <input type="text" class="form-control" id="bookerPhone" th:field="*{bookerPhone}" required>
+                                    <div class="invalid-feedback">Phone number is required</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="bookingDate" class="form-label">Booking Date</label>
+                                    <input type="date" class="form-control" id="bookingDate" th:field="*{bookingDate}" th:min="${minDate}" required>
+                                    <div class="invalid-feedback">Valid booking date is required</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="startTime" class="form-label">Start Time</label>
+                                    <input type="time" class="form-control" id="startTime" th:field="*{startTime}" required>
+                                    <div class="invalid-feedback">Start time is required</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="endTime" class="form-label">End Time</label>
+                                    <input type="time" class="form-control" id="endTime" th:field="*{endTime}" required>
+                                    <div class="invalid-feedback">End time is required</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="numberOfPeople" class="form-label">Number of People</label>
+                                    <input type="number" class="form-control" id="numberOfPeople" th:field="*{numberOfPeople}" min="1" required>
+                                    <div class="invalid-feedback">Number of people must be at least 1</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="purpose" class="form-label">Purpose</label>
+                                    <input type="text" class="form-control" id="purpose" th:field="*{purpose}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="statusDisplay" class="form-label">Status</label>
+                                    <input type="text" class="form-control" id="statusDisplay" th:value="${bookingRequest.status}" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label for="specialRequirements" class="form-label">Special Requirements</label>
+                                    <textarea class="form-control" id="specialRequirements" th:field="*{specialRequirements}" rows="2"></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a th:href="@{/facility-bookings/{id}(id=${bookingRequest.id})}" class="btn btn-secondary me-md-2">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="fragments/footer :: footer"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form validation - only validate on submit, not on page load
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                // Remove any existing was-validated class (important fix)
+                form.classList.remove('was-validated');
+                
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+            
+            // Time validation
+            const startTimeInput = document.getElementById('startTime');
+            const endTimeInput = document.getElementById('endTime');
+            
+            if (startTimeInput && endTimeInput) {
+                startTimeInput.addEventListener('change', function() {
+                    validateTimes();
+                });
+                
+                endTimeInput.addEventListener('change', function() {
+                    validateTimes();
+                });
+                
+                function validateTimes() {
+                    if (startTimeInput.value && endTimeInput.value && startTimeInput.value >= endTimeInput.value) {
+                        endTimeInput.setCustomValidity('End time must be after start time');
+                    } else {
+                        endTimeInput.setCustomValidity('');
+                    }
+                }
+            }
+            
+            // Auto-fill customer details
+            const customerSelect = document.getElementById('customerId');
+            if (customerSelect) {
+                customerSelect.addEventListener('change', function() {
+                    const customerId = this.value;
+                    if (customerId) {
+                        // Fetch customer details and populate form fields
+                        fetch('/api/customers/' + customerId)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(customer => {
+                                document.getElementById('bookerName').value = customer.name;
+                                document.getElementById('bookerEmail').value = customer.email;
+                                document.getElementById('bookerPhone').value = customer.phoneNumber;
+                            })
+                            .catch(error => console.error('Error fetching customer data:', error));
+                    }
+                });
+            }
+            
+            // Calculate cost based on time and facility
+            function calculateTotalCost() {
+                const facilityId = document.getElementById('facilityId').value;
+                const startTime = document.getElementById('startTime').value;
+                const endTime = document.getElementById('endTime').value;
+                
+                if (facilityId && startTime && endTime && startTime < endTime) {
+                    fetch('/api/facilities/' + facilityId)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(facility => {
+                            // Calculate hours (rounded up)
+                            const start = new Date('2000-01-01T' + startTime);
+                            const end = new Date('2000-01-01T' + endTime);
+                            const diffMs = end - start;
+                            const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
+                            
+                            // Calculate cost
+                            const costPerHour = parseFloat(facility.costPerHour);
+                            const totalCost = costPerHour * diffHours;
+                            
+                            console.log(`Estimated cost: $${totalCost.toFixed(2)} (${diffHours} hour(s) × $${costPerHour.toFixed(2)})`);
+                            
+                            // Display message to user about cost
+                            const costMessage = `Estimated cost: $${totalCost.toFixed(2)} (${diffHours} hour(s) × $${costPerHour.toFixed(2)}/hr)`;
+                            alert(costMessage);
+                        })
+                        .catch(error => console.error('Error calculating cost:', error));
+                }
+            }
+            
+            // Add event listeners for cost calculation
+            const facilitySelect = document.getElementById('facilityId');
+            if (facilitySelect) {
+                facilitySelect.addEventListener('change', calculateTotalCost);
+            }
+            
+            if (startTimeInput) {
+                startTimeInput.addEventListener('change', calculateTotalCost);
+            }
+            
+            if (endTimeInput) {
+                endTimeInput.addEventListener('change', calculateTotalCost);
+            }
+        });
+    </script>
+</body>
+</html>
